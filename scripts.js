@@ -3,7 +3,6 @@ let scrolls = 0
 const TOP_MIN =180
 const STEP_TOP = 0.8
 
-
 let arrayText = text.split('')
 let wrapper = document.querySelector('.wrapper')
 console.log(arrayText)
@@ -38,25 +37,19 @@ function createDiv() {
     return div
 }
 
-
 function createSpan() {
     let span = document.createElement('span')
     span.className = 'inner'
     return span
 }
 
-
 function toScrollDowns() {
-    
-
     divs.forEach((elem, i) => {
        let valueTransform = elem.style.transform.split('rotate(').join('').split('deg)')
        let valueTop = +spans[i].style.top.slice(1,-2);
        let valueLeft = +elem.style.left.slice(1, -2)
-        if(+valueTransform[0]===0 && valueLeft<300){
-           
+        if(+valueTransform[0]===0 && valueLeft<300){    
             elem.style.left = `-${valueLeft + 50/3}px`
-            
         }  
         
         console.log(valueLeft)
@@ -64,7 +57,6 @@ function toScrollDowns() {
             console.log('++')
             elem.classList.add('disappearance')
         }
-
 
         if(+valueTransform[0]>6){
             elem.style.transform = `rotate(${valueTransform[0] - 7}deg)`
@@ -74,36 +66,17 @@ function toScrollDowns() {
         }
 
         if(+valueTop<TOP_MIN){
-
             if(+valueTop<TOP_MIN && (+valueTop>TOP_MIN-STEP_TOP)){
                 console.log(`valueTop = ${+valueTop}`)
                 spans[i].style.top = `-${valueTop+TOP_MIN-valueTop}px`
             }
             else{
                 spans[i].style.top = `-${valueTop+STEP_TOP}px`
-            }
-            
-        }
-
-
-        
+            }   
+        }  
     })
-
-
-
-
-
-
-
 }
 
-
-
-
 window.addEventListener('scroll',()=>{
-   
     toScrollDowns()
 })
-
-
-
