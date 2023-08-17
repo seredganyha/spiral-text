@@ -3,17 +3,7 @@ import { Tween, Group } from "tweedle.js"
 import CharSpiral from './CharSpiral';
 import { Viewport } from 'pixi-viewport';
 
-const app = new Application<HTMLCanvasElement>({ width: window.innerWidth, height: window.innerHeight + 5, background: '#000000'})
 
-const viewport = new Viewport({
-    screenWidth: window.innerWidth,
-    screenHeight: window.innerHeight,
-    worldWidth: window.innerWidth,
-    worldHeight: window.innerWidth,
-    events: app.renderer.events
-})
-
-viewport.animate({scaleY: 0.1})
 
 function makeArr(startValue: number, stopValue: number, cardinality: number) {
     var arr = [];
@@ -24,44 +14,64 @@ function makeArr(startValue: number, stopValue: number, cardinality: number) {
     return arr;
 }
 
-const a = 70
+let text = 'слово';
+let a = 5;
+let btn = document.getElementById('btn')
+btn.addEventListener('click', function(){
+    text =  (<HTMLInputElement>document.getElementById('input_text')).value;
+    a =  Number((<HTMLInputElement>document.getElementById('input_a')).value);
+    start(text, a) 
+})
 
-const texts = "Наша жизнь делится на две части: Когда мы маленькие и хотим повзрослеть, и когда уже взрослые и хотим вернуться в детство..".split('').reverse()
+function start(text: string, a: number) {
+    const app = new Application<HTMLCanvasElement>({ width: window.innerWidth, height: window.innerHeight + 5, background: '#000000'})
 
-const container = new Container()
+    const viewport = new Viewport({
+        screenWidth: window.innerWidth,
+        screenHeight: window.innerHeight,
+        worldWidth: window.innerWidth,
+        worldHeight: window.innerWidth,
+        events: app.renderer.events
+    })
+    
+    viewport.animate({scaleY: 0.1})
 
-Ticker.shared.add(update, this);
+    const texts = text.split('').reverse()
 
-container.width = 500;
-container.height = 500;
-container.x = innerWidth / 2;
-container.y = innerHeight /2;
+    const container = new Container()
 
-let arrs = makeArr(0,7*Math.PI, texts.length);
-const charText: CharSpiral[] = texts.map(char => new CharSpiral(char, {fontFamily: 'Arial',
-fontSize: 120,
-fill: 0xff1010,
-align: 'center',}))
+    Ticker.shared.add(update, this);
 
-charText.forEach((text, i) => {
-    text.x = i * 0.008 * a * arrs[i] * Math.sin(arrs[i]);
-    text.y = i * 0 + a * arrs[i] * Math.cos(arrs[i]);
-    viewport.addChild(text)
-});
+    container.width = 500;
+    container.height = 500;
+    container.x = innerWidth / 2;
+    container.y = innerHeight /2;
 
-viewport
-    .drag()
-    .pinch()
-    .wheel()
-    .decelerate()
+    let arrs = makeArr(0,7*Math.PI, texts.length);
+    const charText: CharSpiral[] = texts.map(char => new CharSpiral(char, {fontFamily: 'Arial',
+    fontSize: 120,
+    fill: 0xff1010,
+    align: 'center',}))
 
-viewport.addChild(container);
-container.interactive = true;
-container.eventMode = 'static';
+    charText.forEach((text, i) => {
+        text.x = i * 0.008 * a * arrs[i] * Math.sin(arrs[i]);
+        text.y = i * 0 + a * arrs[i] * Math.cos(arrs[i]);
+        viewport.addChild(text)
+    });
 
-app.stage.addChild(viewport)
+    viewport
+        .drag()
+        .pinch()
+        .wheel()
+        .decelerate()
 
-app.ticker.add(()=> {
+    viewport.addChild(container);
+    container.interactive = true;
+    container.eventMode = 'static';
+
+    app.stage.addChild(viewport)
+
+    app.ticker.add(()=> {
 
     const indexes = charText.map(text => {
         return {x: text.x, y: text.y}
@@ -78,8 +88,12 @@ app.ticker.add(()=> {
         temp = tempNow;
     }
 });
-document.body.appendChild(app.view);
+    document.body.appendChild(app.view);
 
-function update(): void {
-    Group.shared.update()
+    function update(): void {
+        Group.shared.update()
 }
+}
+
+
+
