@@ -2,98 +2,103 @@ import { Application, Container, Ticker } from 'pixi.js'
 import { Tween, Group } from "tweedle.js"
 import CharSpiral from './CharSpiral';
 import { Viewport } from 'pixi-viewport';
-
-
-
-function makeArr(startValue: number, stopValue: number, cardinality: number) {
-    var arr = [];
-    var step = (stopValue - startValue) / (cardinality - 1);
-    for (var i = 0; i < cardinality; i++) {
-      arr.push(startValue + (step * i));
-    }
-    return arr;
-}
+import { Spiral } from './Spiral';
 
 let text = 'слово';
 let a = 5;
-let btn = document.getElementById('btn')
-btn.addEventListener('click', function(){
-    text =  (<HTMLInputElement>document.getElementById('input_text')).value;
-    a =  Number((<HTMLInputElement>document.getElementById('input_a')).value);
-    start(text, a) 
+let twist = 7;
+let xСoefficient = 0.008;
+let yСoefficient = 0;
+let btn = document.querySelector('button')
+const inputText = document.querySelector('#input_text');
+const inputA = document.querySelector('#input_a');
+const inputTwist = document.querySelector('#input_twist');
+const inputX = document.querySelector('#input_x');
+const inputY = document.querySelector('#input_y');
+
+inputA.addEventListener('input', (e) => {
+    destroySpiral()
+    a = Number((<HTMLInputElement>e.target).value);
+    createSpiral(text, a) 
 })
 
-function start(text: string, a: number) {
-    const app = new Application<HTMLCanvasElement>({ width: window.innerWidth, height: window.innerHeight + 5, background: '#000000'})
+inputText.addEventListener('input', (e) => {
+    destroySpiral()
+    text = (<HTMLInputElement>e.target).value;
+    createSpiral(text, a) 
+})
 
-    const viewport = new Viewport({
-        screenWidth: window.innerWidth,
-        screenHeight: window.innerHeight,
-        worldWidth: window.innerWidth,
-        worldHeight: window.innerWidth,
-        events: app.renderer.events
-    })
-    
-    viewport.animate({scaleY: 0.1})
+inputTwist.addEventListener('input', (e) => {
+    destroySpiral()
+    twist = Number((<HTMLInputElement>e.target).value);
+    createSpiral(text, a) 
+})
+
+inputX.addEventListener('input', (e) => {
+    destroySpiral()
+    xСoefficient = Number((<HTMLInputElement>e.target).value);
+    createSpiral(text, a) 
+})
+
+inputY.addEventListener('input', (e) => {
+    destroySpiral()
+    yСoefficient = Number((<HTMLInputElement>e.target).value);
+    createSpiral(text, a) 
+})
+
+btn.addEventListener('click', function(){
+    if (spiral) isStart = !isStart;
+})
+
+const app = new Application<HTMLCanvasElement>({ width: window.innerWidth, height: window.innerHeight + 5, background: '#000000'})
+const viewport = new Viewport({
+    screenWidth: window.innerWidth,
+    screenHeight: window.innerHeight,
+    worldWidth: window.innerWidth,
+    worldHeight: window.innerWidth,
+    events: app.renderer.events
+})
+
+let isStart = false;
+let spiral: Spiral;
+
+viewport
+    .drag()
+    .pinch()
+    .wheel()
+    .decelerate()
+
+app.stage.addChild(viewport);
+Ticker.shared.add(update, this);
+viewport.animate({scaleY: 0.1});
+document.body.appendChild(app.view);
+
+app.ticker.add(()=> {
+    if (isStart && spiral) {
+        spiral.update();
+    }
+});
+
+function destroySpiral() {
+    viewport?.children[0]?.destroy();
+}
+
+function createSpiral(text: string, a: number) {
 
     const texts = text.split('').reverse()
 
-    const container = new Container()
-
-    Ticker.shared.add(update, this);
-
-    container.width = 500;
-    container.height = 500;
-    container.x = innerWidth / 2;
-    container.y = innerHeight /2;
-
-    let arrs = makeArr(0,7*Math.PI, texts.length);
     const charText: CharSpiral[] = texts.map(char => new CharSpiral(char, {fontFamily: 'Arial',
     fontSize: 120,
     fill: 0xff1010,
     align: 'center',}))
 
-    charText.forEach((text, i) => {
-        text.x = i * 0.008 * a * arrs[i] * Math.sin(arrs[i]);
-        text.y = i * 0 + a * arrs[i] * Math.cos(arrs[i]);
-        viewport.addChild(text)
-    });
+    spiral = new Spiral(charText, {stepSpiral: a, twistFactor: twist, xСoefficient: xСoefficient, yСoefficient: yСoefficient})
 
-    viewport
-        .drag()
-        .pinch()
-        .wheel()
-        .decelerate()
-
-    viewport.addChild(container);
-    container.interactive = true;
-    container.eventMode = 'static';
-
-    app.stage.addChild(viewport)
-
-    app.ticker.add(()=> {
-
-    const indexes = charText.map(text => {
-        return {x: text.x, y: text.y}
-    });
-    const tempX = charText[charText.length - 1].x;
-    const tempY = charText[charText.length -1].y;
-    let temp = { x: tempX, y: tempY };
-    for (let i = 1; i < indexes.length; i++) {
-        if (i === indexes.length - 1) {
-            charText[i].x -= 15;
-        }
-       let tempNow = {x: charText[i].x, y: charText[i].y};
-        new Tween(charText[i-1]).to( {x: indexes[i].x, y: indexes[i].y}, 200).start();
-        temp = tempNow;
-    }
-});
-    document.body.appendChild(app.view);
-
-    function update(): void {
-        Group.shared.update()
-}
+    viewport.addChild(spiral);
 }
 
+function update(): void {
+    Group.shared.update()
+}
 
 
